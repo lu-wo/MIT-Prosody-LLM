@@ -1,0 +1,39 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /data: prominence_reg.yaml
+  - override /model: token_tagging_regressor.yaml
+  - override /callbacks: prominence_regression.yaml
+  - override /trainer: mps.yaml
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+tags: ["gpt2", "prominence", "regression"]
+
+seed: 12345
+
+trainer:
+  min_epochs: 1
+  max_epochs: 12
+  gradient_clip_val: 1
+
+model:
+  huggingface_model: gpt2
+  num_labels: 1
+    
+
+data:
+  batch_size: 32
+  dataset_name: helsinki_prominence
+  tokenizer_name: gpt2
+
+logger:
+  wandb:
+    tags: ${tags}
+    group: "mnist"
+  aim:
+    experiment: "mnist"

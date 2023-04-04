@@ -1,0 +1,11 @@
+_target_: src.data.prominence_regression_datamodule.ProminenceRegressionDataModule
+data_dir: /Users/lukas/Desktop/projects/MIT/prosody/prosody/repositories/helsinki-prosody/data
+train_file: train_100.txt
+val_file: dev.txt
+test_file: test.txt
+batch_size: 64
+train_val_test_split: null
+tokenizer_name: null
+use_fast_tokenizer: False 
+num_workers: 2
+pin_memory: False

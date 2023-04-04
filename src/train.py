@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional, Tuple
 
 import hydra
@@ -6,7 +7,7 @@ import pyrootutils
 import torch
 from lightning import Callback, LightningDataModule, LightningModule, Trainer
 from lightning.pytorch.loggers import Logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 # ------------------------------------------------------------------------------------ #
@@ -30,6 +31,9 @@ from src import utils
 
 log = utils.get_pylogger(__name__)
 
+os.environ["TRANSFORMERS_CACHE"] = "/nese/mit/group/evlab/u/luwo/cache/huggingface"
+os.environ["WANDB_CACHE_DIR"] = "/nese/mit/group/evlab/u/luwo/cache/wandb"
+
 
 @utils.task_wrapper
 def train(cfg: DictConfig) -> Tuple[dict, dict]:
@@ -46,12 +50,17 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
         Tuple[dict, dict]: Dict with metrics and dict with all instantiated objects.
     """
 
+    # print config
+    # print(f"Train start Config:\n{OmegaConf.to_yaml(cfg)}")
+
     # set seed for random number generators in pytorch, numpy and python.random
     if cfg.get("seed"):
         L.seed_everything(cfg.seed, workers=True)
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
-    datamodule: LightningDataModule = hydra.utils.instantiate(cfg.data)
+    datamodule: LightningDataModule = hydra.utils.instantiate(
+        cfg.data, model_name=cfg.model.huggingface_model
+    )
 
     log.info(f"Instantiating model <{cfg.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(cfg.model)
@@ -63,7 +72,9 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     logger: List[Logger] = utils.instantiate_loggers(cfg.get("logger"))
 
     log.info(f"Instantiating trainer <{cfg.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(cfg.trainer, callbacks=callbacks, logger=logger)
+    trainer: Trainer = hydra.utils.instantiate(
+        cfg.trainer, callbacks=callbacks, logger=logger
+    )
 
     object_dict = {
         "cfg": cfg,
