@@ -117,20 +117,20 @@ class TokenTaggingRegressor(LightningModule):
         # loss is batch loss, val_loss tracks it over the epoch
         loss, preds = self.step(batch)
         self.val_loss(preds, batch["labels"], batch["attention_mask"])
-        self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         return {"loss": loss, "preds": preds, "targets": batch["labels"]}
 
     def on_validation_epoch_end(self):
         loss = self.val_loss.compute()
         self.val_loss_best(loss)
-        self.log("val/loss_best", self.val_loss_best, prog_bar=True)
+        self.log("val/loss_best", self.val_loss_best.compute(), prog_bar=True)
 
     def test_step(self, batch: Dict[str, torch.tensor], batch_idx: int):
         # loss is batch loss, test_loss tracks it over the epoch
         loss, preds = self.step(batch)
         self.test_loss(preds, batch["labels"], batch["attention_mask"])
         self.log(
-            "test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True
+            "test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True
         )
         return {"loss": loss, "preds": preds, "targets": batch["labels"]}
 

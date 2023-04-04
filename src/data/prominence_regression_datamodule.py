@@ -145,15 +145,16 @@ class ProminenceRegressionDataModule(LightningDataModule):
         print(f"Validation dataset size: {len(self.val_dataset)}")
         print(f"Test dataset size: {len(self.test_dataset)}")
 
+    def collate(self, batch):
+        return encode_and_pad_batch(batch, self.tokenizer, self.hparams.model_name)
+
     def train_dataloader(self):
         return DataLoader(
             dataset=self.train_dataset,
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
-            collate_fn=lambda batch: encode_and_pad_batch(
-                batch, self.tokenizer, self.hparams.model_name
-            ),
+            collate_fn=self.collate,
             shuffle=True,
         )
 
@@ -163,9 +164,7 @@ class ProminenceRegressionDataModule(LightningDataModule):
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
-            collate_fn=lambda batch: encode_and_pad_batch(
-                batch, self.tokenizer, self.hparams.model_name
-            ),
+            collate_fn=self.collate,
             shuffle=False,
         )
 
@@ -175,8 +174,6 @@ class ProminenceRegressionDataModule(LightningDataModule):
             batch_size=self.hparams.batch_size,
             num_workers=self.hparams.num_workers,
             pin_memory=self.hparams.pin_memory,
-            collate_fn=lambda batch: encode_and_pad_batch(
-                batch, self.tokenizer, self.hparams.model_name
-            ),
+            collate_fn=self.collate,
             shuffle=False,
         )

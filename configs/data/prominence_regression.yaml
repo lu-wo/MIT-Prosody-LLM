@@ -7,5 +7,5 @@ batch_size: 64
 train_val_test_split: null
 tokenizer_name: null
 use_fast_tokenizer: False 
-num_workers: 2
+num_workers: 0
 pin_memory: False
