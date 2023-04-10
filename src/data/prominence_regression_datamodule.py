@@ -16,7 +16,8 @@ from transformers import GPT2Tokenizer, BertTokenizer, AutoTokenizer, AutoModel
 
 
 from src.data.components.helsinki import HelsinkiProminenceExtractor
-from src.data.components.datasets import TokenTaggingDataset, encode_and_pad_batch
+from src.data.components.datasets import TokenTaggingDataset
+from src.data.components.collators import collate_fn, encode_and_pad_batch
 
 
 class ProminenceRegressionDataModule(LightningDataModule):
@@ -46,7 +47,6 @@ class ProminenceRegressionDataModule(LightningDataModule):
         val_file: str,
         test_file: str,
         dataset_name: str,
-        tokenizer_name: str,
         use_fast_tokenizer: bool = False,
         batch_size: int = 64,
         max_length: int = 128,
@@ -54,6 +54,9 @@ class ProminenceRegressionDataModule(LightningDataModule):
         pin_memory: bool = False,
         train_val_test_split: Tuple[int, int, int] = (0.8, 0.1, 0.1),
         model_name: str = None,
+        score_first_token: bool = False,
+        relative_to_prev: bool = False,
+        n_prev: int = 1,
     ):
         super().__init__()
 
@@ -85,22 +88,29 @@ class ProminenceRegressionDataModule(LightningDataModule):
     def setup(self, stage: Optional[str] = None):
         """Load data. Set variables: `self.data_train`, `self.data_val`, `self.data_test`.
         This method is called by lightning twice for `trainer.fit()` and `trainer.test()`, so be careful if you do a random split!
-        The `stage` can be used to differentiate whether it's called before trainer.fit()` or `trainer.test()`."""
+        The `stage` can be used to differentiate whether it's called before trainer.fit()` or `trainer.test()`.
+        """
 
         if not self.tokenizer:
             if self.hparams.model_name == "gpt2":
+                print("Using GPT2 tokenizer")
                 self.tokenizer = GPT2Tokenizer.from_pretrained(
-                    "gpt2",
-                    use_fast=self.hparams.use_fast_tokenizer,
-                    add_prefix_space=True,
+                    "gpt2", add_prefix_space=True
                 )
-                self.tokenizer.pad_token = self.tokenizer.eos_token
-            elif self.hparams.model_name == "bert-base-uncased":
-                self.tokenizer = AutoTokenizer.from_pretrained(
-                    "bert-base-uncased", use_fast=self.hparams.use_fast_tokenizer
+                self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            elif self.hparams.model_name.lower().startswith("bert"):
+                case = (
+                    "uncased"
+                    if self.hparams.model_name.lower() == "bert-uncased"
+                    else "cased"
                 )
+                print(f"Using BERT tokenizer, case: {case}")
+                self.tokenizer = BertTokenizer.from_pretrained(f"bert-base-{case}")
+                self.tokenizer.pad_token_id = self.tokenizer.sep_token_id
             else:
                 raise ValueError("Model name not recognized.")
+        self.pad_token_id = self.tokenizer.pad_token_id
+        print(f"Dataloader: padding with token id: {self.pad_token_id}")
 
         self.dataset_path = Path(self.hparams.data_dir)
         if not os.path.exists(self.dataset_path):
@@ -112,10 +122,13 @@ class ProminenceRegressionDataModule(LightningDataModule):
         self.train_texts = train_extractor.get_all_texts()
         self.train_prominences = train_extractor.get_all_real_prominence()
         self.train_dataset = TokenTaggingDataset(
-            self.train_texts,
-            self.train_prominences,
-            self.tokenizer,
-            self.hparams.model_name,
+            input_texts=self.train_texts,
+            targets=self.train_prominences,
+            tokenizer=self.tokenizer,
+            model_name=self.hparams.model_name,
+            score_first_token=self.hparams.score_first_token,
+            relative_to_prev=self.hparams.relative_to_prev,
+            n_prev=self.hparams.n_prev,
         )
 
         val_extractor = HelsinkiProminenceExtractor(
@@ -124,10 +137,13 @@ class ProminenceRegressionDataModule(LightningDataModule):
         self.val_texts = val_extractor.get_all_texts()
         self.val_prominences = val_extractor.get_all_real_prominence()
         self.val_dataset = TokenTaggingDataset(
-            self.val_texts,
-            self.val_prominences,
-            self.tokenizer,
-            self.hparams.model_name,
+            input_texts=self.val_texts,
+            targets=self.val_prominences,
+            tokenizer=self.tokenizer,
+            model_name=self.hparams.model_name,
+            score_first_token=self.hparams.score_first_token,
+            relative_to_prev=self.hparams.relative_to_prev,
+            n_prev=self.hparams.n_prev,
         )
 
         test_extractor = HelsinkiProminenceExtractor(
@@ -136,18 +152,24 @@ class ProminenceRegressionDataModule(LightningDataModule):
         self.test_texts = test_extractor.get_all_texts()
         self.test_prominences = test_extractor.get_all_real_prominence()
         self.test_dataset = TokenTaggingDataset(
-            self.test_texts,
-            self.test_prominences,
-            self.tokenizer,
-            self.hparams.model_name,
+            input_texts=self.test_texts,
+            targets=self.test_prominences,
+            tokenizer=self.tokenizer,
+            model_name=self.hparams.model_name,
+            score_first_token=self.hparams.score_first_token,
+            relative_to_prev=self.hparams.relative_to_prev,
+            n_prev=self.hparams.n_prev,
         )
 
         print(f"Train dataset size: {len(self.train_dataset)}")
         print(f"Validation dataset size: {len(self.val_dataset)}")
         print(f"Test dataset size: {len(self.test_dataset)}")
 
-    def collate(self, batch):
+    def encode_collate(self, batch):
         return encode_and_pad_batch(batch, self.tokenizer, self.hparams.model_name)
+
+    def collate(self, batch):
+        return collate_fn(batch, self.tokenizer.pad_token_id)
 
     def train_dataloader(self):
         return DataLoader(

@@ -118,17 +118,24 @@ class Dataset(data.Dataset):
         )
 
 
-def load_dataset(config):
+def load_dataset(
+    datadir,
+    train_set,
+    fraction_of_train_data,
+    nclasses,
+    shuffle_sentences,
+    sorted_batches,
+):
     splits = dict()
     words = []
     all_sents = []
     for split in ["train", "dev", "test"]:
         tagged_sents = []
-        filename = config.train_set if split == "train" else split
-        with open(config.datadir + "/" + filename + ".txt") as f:
+        filename = train_set if split == "train" else split
+        with open(datadir + "/" + filename + ".txt") as f:
             lines = f.readlines()
-            if config.fraction_of_train_data < 1 and split == "train":
-                slice = len(lines) * config.fraction_of_train_data
+            if fraction_of_train_data < 1 and split == "train":
+                slice = len(lines) * fraction_of_train_data
                 lines = lines[0 : int(round(slice))]
             sent = []
             for i, line in enumerate(lines):
@@ -140,15 +147,11 @@ def load_dataset(config):
                     value_prominance = split_line[3]
                     value_boundary = split_line[4]
 
-                    # Modify tag value if we specified a different config.nclasses
-                    # than default value of 3
-                    if config.nclasses == 2:
+                    if nclasses == 2:
                         if tag_prominence == "2":
-                            tag_prominence = "1"  # Collapse the non-0 classes
-                    elif config.nclasses > 3:
-                        tag_prominence = rediscretize_tag(
-                            value_prominance, config.nclasses
-                        )
+                            tag_prominence = "1"
+                    elif nclasses > 3:
+                        tag_prominence = rediscretize_tag(value_prominance, nclasses)
 
                     sent.append(
                         (
@@ -164,7 +167,7 @@ def load_dataset(config):
                     tagged_sents.append(sent)
                     sent = []
 
-        if config.shuffle_sentences:
+        if shuffle_sentences:
             random.shuffle(tagged_sents)
 
         splits[split] = tagged_sents
@@ -186,7 +189,7 @@ def load_dataset(config):
     print("Dev sentences: {}".format(len(splits["dev"])))
     print("Test sentences: {}".format(len(splits["test"])))
 
-    if config.sorted_batches:
+    if sorted_batches:
         random.shuffle(splits["train"])
         splits["train"].sort(key=len)
 

@@ -1,6 +1,12 @@
 <div align="center">
 
-# Lightning-Hydra-Template
+# Prosody Language Model
+
+[![MIT](https://img.shields.io/badge/MIT-University-red?logo=mit&logoColor=white)](https://www.mit.edu/)
+[![ETH Zurich](https://img.shields.io/badge/ETH_Zurich-University-blue?logo=ethz&logoColor=white)](https://www.ethz.ch/)
+
+
+##### Powered by Pytorch-Lightning and Hydra
 
 [![python](https://img.shields.io/badge/-Python_3.8_%7C_3.9_%7C_3.10-blue?logo=python&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![pytorch](https://img.shields.io/badge/PyTorch_2.0+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
@@ -15,16 +21,16 @@
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ashleve/lightning-hydra-template/pulls)
 [![contributors](https://img.shields.io/github/contributors/ashleve/lightning-hydra-template.svg)](https://github.com/ashleve/lightning-hydra-template/graphs/contributors)
 
-A clean template to kickstart your deep learning project 🚀⚡🔥<br>
+<!-- A clean template to kickstart your deep learning project 🚀⚡🔥<br>
 Click on [<kbd>Use this template</kbd>](https://github.com/ashleve/lightning-hydra-template/generate) to initialize new repository.
 
-_Suggestions are always welcome!_
+_Suggestions are always welcome!_ -->
 
 </div>
 
-<br>
+<!-- <br> -->
 
-## 📌  Introduction
+<!-- ## 📌  Introduction
 
 **Why you might want to use it:**
 
@@ -51,9 +57,9 @@ The configuration setup is built with simple lightning training in mind. You mig
 ❌ Might not support your workflow <br>
 For example, you can't resume hydra-based multirun or hyperparameter search.
 
-> **Note**: _Keep in mind this is unofficial community project._
+> **Note**: _Keep in mind this is unofficial community project._ -->
 
-<br>
+<!-- <br> -->
 
 ## Main Technologies
 
@@ -490,9 +496,9 @@ ValueError: Specify tags before launching a multirun!
 
 </details>
 
-<br>
+<!-- <br> -->
 
-## ❤️  Contributions
+<!-- ## ❤️  Contributions
 
 This project exists thanks to all the people who contribute.
 
@@ -505,9 +511,9 @@ Before making an issue, please verify that:
 - The problem still exists on the current `main` branch.
 - Your python dependencies are updated to recent versions.
 
-Suggestions for improvements are always welcome!
+Suggestions for improvements are always welcome! -->
 
-<br>
+<!-- <br> -->
 
 ## How It Works
 
@@ -1212,7 +1218,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-<br>
+<!-- <br>
 <br>
 <br>
 <br>
@@ -1294,4 +1300,4 @@ You can override any parameter from command line like this
 
 ```bash
 python src/train.py trainer.max_epochs=20 data.batch_size=64
-```
+``` -->

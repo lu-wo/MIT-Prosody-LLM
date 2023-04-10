@@ -14,6 +14,7 @@ scheduler:
   patience: 10
 
 huggingface_model: gpt2
+num_labels: 1
 
 mlp:
   use: False 

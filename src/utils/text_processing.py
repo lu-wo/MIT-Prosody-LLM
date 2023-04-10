@@ -1,16 +1,19 @@
-from transformers import GPT2Tokenizer, GPT2Model
-import torch
 import numpy as np
 from tqdm import tqdm
 from omegaconf import DictConfig, OmegaConf
 
 
-def distribute_word_label_to_token(text, label, tokenizer, model_name):
+def distribute_word_label_to_token(
+    text, label, tokenizer, model_name, relative_to_prev=False, n_prev=1
+):
     """
     Tokenizes the text and distributes the corresponding labels to each of it's tokens
     ::param text: string of text
     ::param label: list of labels
     ::param tokenizer: tokenizer object
+    ::param model_name: name of the model/tokenizer
+    ::param relative_to_prev: if True, the labels are computted relative to the previous label(s)
+    ::param n_prev: number of previous labels to consider
     ::return tokens: list of tokens
     ::return token_labels: list of labels of same length as tokens
     """
@@ -30,13 +33,17 @@ def distribute_word_label_to_token(text, label, tokenizer, model_name):
 
     # add the labels to the tokens
     word_to_token = []
+    grouped_tokens = []
     idx = 0
     for word_tokens in word_encodings:
-        tokenoutput = []
+        token_output = []
+        token_group = []
         for token in word_tokens:
-            tokenoutput.append(idx)
+            token_output.append(idx)
             idx += 1
-        word_to_token.append(tokenoutput)
+            token_group.append(token)
+        word_to_token.append(token_output)
+        grouped_tokens.append(token_group)
 
     # print("word_to_token\n", word_to_token)
 
@@ -47,4 +54,4 @@ def distribute_word_label_to_token(text, label, tokenizer, model_name):
         token_labels += [label] * len(tokens_of_word)
 
     tokens = [item for sublist in word_encodings for item in sublist]
-    return tokens, token_labels
+    return tokens, token_labels, word_to_token, grouped_tokens

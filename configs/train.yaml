@@ -6,7 +6,7 @@
 defaults:
   - _self_
   - data: mnist.yaml
-  - model: mnist.yaml
+  - model_task: mnist.yaml
   - callbacks: default.yaml
   - logger: null # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
   - trainer: gpu.yaml # cpu, gpu, mps 

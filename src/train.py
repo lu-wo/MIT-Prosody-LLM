@@ -59,12 +59,12 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
 
     log.info(f"Instantiating datamodule <{cfg.data._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(
-        cfg.data, model_name=cfg.model.huggingface_model
+        cfg.data, model_name=cfg.model_task.huggingface_model
     )
 
-    log.info(f"Instantiating model <{cfg.model._target_}>")
+    log.info(f"Instantiating model <{cfg.model_task._target_}>")
     model: LightningModule = hydra.utils.instantiate(
-        cfg.model, save_path=cfg.paths.output_dir
+        cfg.model_task, save_path=cfg.paths.output_dir
     )
 
     log.info("Instantiating callbacks...")

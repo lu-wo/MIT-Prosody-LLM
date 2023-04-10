@@ -1,6 +1,7 @@
 import os
 import inspect
 from typing import Any, Dict, List, Tuple
+import pickle
 
 import torch
 from lightning import LightningModule
@@ -101,24 +102,24 @@ class TokenTaggingRegressor(LightningModule):
 
     def step(self, batch: Dict[str, torch.tensor]):
         logits = self(batch)  # forward pass
-        labels = batch["labels"]
-        mask = batch["attention_mask"]  # ignore padded sequence in loss
+        labels = batch["tokenized_labels"]
+        loss_mask = batch["loss_mask"]  # ignore padded sequence in loss
         loss = masked_loss(
-            labels=labels, predictions=logits, mask=mask, loss_fn=self.loss_fn
+            labels=labels, predictions=logits, mask=loss_mask, loss_fn=self.loss_fn
         )
         return loss, logits
 
     def training_step(self, batch: Dict[str, torch.tensor], batch_idx: int):
         # loss is batch loss, train_loss tracks it over the epoch
         loss, preds = self.step(batch)
-        self.train_loss(preds, batch["labels"], batch["attention_mask"])
+        self.train_loss(preds, batch["tokenized_labels"], batch["loss_mask"])
         self.log(
             "train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True
         )
         return {
             "loss": loss,
             "preds": preds,
-            "targets": batch["labels"],
+            "targets": batch["tokenized_labels"],
             "attention_mask": batch["attention_mask"],
         }
 
@@ -128,12 +129,12 @@ class TokenTaggingRegressor(LightningModule):
     def validation_step(self, batch: Dict[str, torch.tensor], batch_idx: int):
         # loss is batch loss, val_loss tracks it over the epoch
         loss, preds = self.step(batch)
-        self.val_loss(preds, batch["labels"], batch["attention_mask"])
+        self.val_loss(preds, batch["tokenized_labels"], batch["loss_mask"])
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         return {
             "loss": loss,
             "preds": preds,
-            "targets": batch["labels"],
+            "targets": batch["tokenized_labels"],
             "attention_mask": batch["attention_mask"],
         }
 
@@ -145,14 +146,13 @@ class TokenTaggingRegressor(LightningModule):
     def test_step(self, batch: Dict[str, torch.tensor], batch_idx: int):
         # loss is batch loss, test_loss tracks it over the epoch
         loss, preds = self.step(batch)
-        self.test_loss(preds, batch["labels"], batch["attention_mask"])
+        self.test_loss(preds, batch["tokenized_labels"], batch["loss_mask"])
         self.log(
             "test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True
         )
 
         # TODO: make callback work
-        #
-        # Save test data and predictions
+        # save predictions
         np.save(
             f"{self.save_path}/predictions/test_input_ids_{batch_idx}.npy",
             batch["input_ids"].cpu().numpy(),
@@ -163,21 +163,41 @@ class TokenTaggingRegressor(LightningModule):
         )
         np.save(
             f"{self.save_path}/predictions/test_labels_{batch_idx}.npy",
-            batch["labels"].cpu().numpy(),
+            batch["tokenized_labels"].cpu().numpy(),
         )
         np.save(
             f"{self.save_path}/predictions/test_preds_{batch_idx}.npy",
             preds.cpu().numpy(),
         )
-        #
+        np.save(
+            f"{self.save_path}/predictions/test_loss_mask_{batch_idx}.npy",
+            batch["loss_mask"].cpu().numpy(),
+        )
+        # pickle input text and original labels and word_to_tokens for later evaluation
+        with open(
+            f"{self.save_path}/predictions/test_input_text_{batch_idx}.pkl", "wb"
+        ) as f:
+            pickle.dump(batch["input_text"], f)
+        with open(
+            f"{self.save_path}/predictions/test_original_labels_{batch_idx}.pkl", "wb"
+        ) as f:
+            pickle.dump(batch["original_labels"], f)
+        with open(
+            f"{self.save_path}/predictions/test_word_to_tokens_{batch_idx}.pkl", "wb"
+        ) as f:
+            pickle.dump(batch["word_to_tokens"], f)
         #
         #
 
         return {
             "loss": loss,
             "preds": preds,
-            "targets": batch["labels"],
+            "targets": batch["tokenized_labels"],
             "attention_mask": batch["attention_mask"],
+            "loss_mask": batch["loss_mask"],
+            "input_ids": batch["input_ids"],
+            "input_text": batch["input_text"],
+            "original_labels": batch["original_labels"],
         }
 
     def on_test_epoch_end(self):

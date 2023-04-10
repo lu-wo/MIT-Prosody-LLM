@@ -6,7 +6,10 @@ defaults:
   - default.yaml
 
 trainer:
-  max_epochs: 5
-  limit_train_batches: 0.1
+  max_epochs: 2
+  limit_train_batches: 0.01
   limit_val_batches: 0.05
   limit_test_batches: 0.05
+
+data:
+  data_dir: /Users/lukas/Desktop/projects/MIT/prosody/prosody/repositories/helsinki-prosody/data

@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: prominence_regression.yaml
-  - override /model: token_tagging_regressor.yaml
+  - override /model_task: token_tagging_regressor.yaml
   - override /callbacks: prominence_regression.yaml
   - override /logger: many_loggers.yaml
   - override /trainer: gpu.yaml
@@ -39,7 +39,6 @@ model:
     weight_decay: 0.0001
 
 data:
-  batch_size: 64
+  batch_size: 32
   dataset_name: helsinki_prominence
-  tokenizer_name: gpt2
   data_dir: /nese/mit/group/evlab/u/luwo/projects/prosody/prosody/repositories/helsinki-prosody/data

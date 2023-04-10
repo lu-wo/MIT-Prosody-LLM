@@ -5,7 +5,7 @@
 
 defaults:
   - override /data: mnist.yaml
-  - override /model: mnist.yaml
+  - override /model_task: mnist.yaml
   - override /callbacks: default.yaml
   - override /trainer: default.yaml
 
