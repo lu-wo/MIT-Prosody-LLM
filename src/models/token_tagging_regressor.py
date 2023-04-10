@@ -1,3 +1,4 @@
+import os
 import inspect
 from typing import Any, Dict, List, Tuple
 
@@ -7,7 +8,7 @@ from torch import nn
 from torchmetrics import MinMetric
 from torchmetrics import MeanSquaredError
 from transformers import AdamW, AutoModel, get_linear_schedule_with_warmup
-from sklearn.metrics import r2_score
+import numpy as np
 
 from src.utils import utils
 from src.utils.torch_utils import masked_loss
@@ -38,12 +39,13 @@ class TokenTaggingRegressor(LightningModule):
         mlp: nn.Module = None,
         p_dropout: float = 0.1,
         loss_fn: nn.Module = torch.nn.MSELoss(reduction="none"),
+        save_path: str = None,
     ):
         super().__init__()
 
         # this line allows to access init params with 'self.hparams' attribute
         # it also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False)
+        self.save_hyperparameters(logger=False, ignore="loss_fn")
 
         # Load model and add classification head
         self.model = AutoModel.from_pretrained(huggingface_model)
@@ -74,6 +76,11 @@ class TokenTaggingRegressor(LightningModule):
             param.name for param in params if param.kind == param.POSITIONAL_OR_KEYWORD
         ]
         self.forward_signature = params
+
+        # create save path dir
+        if save_path is not None:
+            self.save_path = save_path
+            os.makedirs(os.path.join(self.save_path, "predictions"), exist_ok=True)
 
     def forward(self, batch: Dict[str, torch.tensor]):
         # batch: dict with keys "input_ids", "attention_mask", "labels"
@@ -108,7 +115,12 @@ class TokenTaggingRegressor(LightningModule):
         self.log(
             "train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True
         )
-        return {"loss": loss, "preds": preds, "targets": batch["labels"]}
+        return {
+            "loss": loss,
+            "preds": preds,
+            "targets": batch["labels"],
+            "attention_mask": batch["attention_mask"],
+        }
 
     def on_train_epoch_end(self):
         pass
@@ -118,7 +130,12 @@ class TokenTaggingRegressor(LightningModule):
         loss, preds = self.step(batch)
         self.val_loss(preds, batch["labels"], batch["attention_mask"])
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
-        return {"loss": loss, "preds": preds, "targets": batch["labels"]}
+        return {
+            "loss": loss,
+            "preds": preds,
+            "targets": batch["labels"],
+            "attention_mask": batch["attention_mask"],
+        }
 
     def on_validation_epoch_end(self):
         loss = self.val_loss.compute()
@@ -132,7 +149,36 @@ class TokenTaggingRegressor(LightningModule):
         self.log(
             "test/loss", self.test_loss, on_step=False, on_epoch=True, prog_bar=True
         )
-        return {"loss": loss, "preds": preds, "targets": batch["labels"]}
+
+        # TODO: make callback work
+        #
+        # Save test data and predictions
+        np.save(
+            f"{self.save_path}/predictions/test_input_ids_{batch_idx}.npy",
+            batch["input_ids"].cpu().numpy(),
+        )
+        np.save(
+            f"{self.save_path}/predictions/test_attention_mask_{batch_idx}.npy",
+            batch["attention_mask"].cpu().numpy(),
+        )
+        np.save(
+            f"{self.save_path}/predictions/test_labels_{batch_idx}.npy",
+            batch["labels"].cpu().numpy(),
+        )
+        np.save(
+            f"{self.save_path}/predictions/test_preds_{batch_idx}.npy",
+            preds.cpu().numpy(),
+        )
+        #
+        #
+        #
+
+        return {
+            "loss": loss,
+            "preds": preds,
+            "targets": batch["labels"],
+            "attention_mask": batch["attention_mask"],
+        }
 
     def on_test_epoch_end(self):
         pass

@@ -47,3 +47,29 @@ class MaskedMeanSquaredError(MeanSquaredError):
         # Update the state
         self.sum_squared_error += torch.sum(masked_squared_error)
         self.total += torch.sum(mask)
+
+
+class MaskedAccuracy(Metric):
+    def __init__(
+        self,
+        compute_on_step: bool = True,
+        dist_sync_on_step: bool = False,
+        # process_group: Any = None,
+    ):
+        super().__init__(
+            compute_on_step=compute_on_step,
+            dist_sync_on_step=dist_sync_on_step,
+            # process_group=process_group,
+        )
+
+        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds: Tensor, target: Tensor, mask: Tensor) -> None:
+        preds = torch.argmax(preds, dim=-1)
+        correct = (preds == target) * mask.bool()
+        self.correct += torch.sum(correct)
+        self.total += torch.sum(mask)
+
+    def compute(self) -> Tensor:
+        return self.correct.float() / self.total

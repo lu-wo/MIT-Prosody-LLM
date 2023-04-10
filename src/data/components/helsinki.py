@@ -8,18 +8,20 @@ def process_file(filename):
     Output format is a list of samples that look like:
         {
         'filename': '1034_121119_000001_000001.txt',
-        'word_labels': [{'text': 'The',
-        'discrete_prominence': 0,
-        'discrete_word_boundary': 0,
-        'real_prominence': 0.171,
-        'real_word_boundary': 0.0},
-        {'text': 'Law',
-        'discrete_prominence': 2,
-        'discrete_word_boundary': 2,
-        'real_prominence': 1.826,
-        'real_word_boundary': 2.0}],
-        'text': 'The Law '
-        }
+        'word_labels': [
+            {'text': 'The',
+            'discrete_prominence': 0,
+            'discrete_word_boundary': 0,
+            'real_prominence': 0.171,
+            'real_word_boundary': 0.0},
+            {'text': 'Law',
+            'discrete_prominence': 2,
+            'discrete_word_boundary': 2,
+            'real_prominence': 1.826,
+            'real_word_boundary': 2.0}],
+            'text': 'The Law '
+            }
+        ]
     """
     utterances = []
     current_utterance = None
@@ -66,7 +68,7 @@ class HelsinkiProminenceExtractor:
         self.root_dir = root_dir
         self.filename = filename
         self.utterances = process_file(os.path.join(root_dir, filename))
-        print("Loaded {} utterances".format(len(self.utterances)))
+        # print("Loaded {} utterances".format(len(self.utterances)))
         self.length = len(self.utterances)
         self.filename_to_index = {self.get_filename(i): i for i in range(self.length)}
 

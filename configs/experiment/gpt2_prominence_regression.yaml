@@ -8,7 +8,7 @@ defaults:
   - override /model: token_tagging_regressor.yaml
   - override /callbacks: prominence_regression.yaml
   - override /logger: many_loggers.yaml
-  - override /trainer: mps.yaml
+  - override /trainer: gpu.yaml
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
@@ -23,22 +23,23 @@ logger:
     entity: prosody
     tags: ["gpt2", "prominence", "regression"]
     name: "run-${now:%Y-%m-%d_%H-%M-%S}"
-    # group: "mnist" # Add this line to override the 'group' parameter
+    group: "gpt2" # Add this line to override the 'group' parameter
     log_model: True # Add this line to override the 'log_model' parameter
-    # Add any other WandB logger parameters you want to override here
-  # aim:
-  #   experiment: "mnist"
 
 trainer:
   min_epochs: 1
-  max_epochs: 12
+  max_epochs: 100
   gradient_clip_val: 1
 
 model:
   huggingface_model: gpt2
   num_labels: 1
+  optimizer:
+    lr: 0.00005
+    weight_decay: 0.0001
 
 data:
-  batch_size: 32
+  batch_size: 64
   dataset_name: helsinki_prominence
   tokenizer_name: gpt2
+  data_dir: /nese/mit/group/evlab/u/luwo/projects/prosody/prosody/repositories/helsinki-prosody/data

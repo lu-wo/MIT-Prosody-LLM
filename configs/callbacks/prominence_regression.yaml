@@ -3,6 +3,7 @@ defaults:
   - early_stopping.yaml
   - model_summary.yaml
   - rich_progress_bar.yaml
+  # - store_test_data.yaml
   - _self_
 
 model_checkpoint:
@@ -15,7 +16,7 @@ model_checkpoint:
 
 early_stopping:
   monitor: "val/loss"
-  patience: 10
+  patience: 3
   mode: "min"
 
 model_summary:

@@ -9,7 +9,7 @@ defaults:
   - model: mnist.yaml
   - callbacks: default.yaml
   - logger: null # set logger here or use command line (e.g. `python train.py logger=tensorboard`)
-  - trainer: mps.yaml
+  - trainer: gpu.yaml # cpu, gpu, mps 
   - paths: default.yaml
   - extras: default.yaml
   - hydra: default.yaml

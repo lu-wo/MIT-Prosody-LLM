@@ -104,18 +104,4 @@ class TokenTaggingDataset(Dataset):
         assert len(tokens) == len(
             token_labels
         ), f"tokens and labels have different length: {len(tokens)} != {len(token_labels)}"
-        # print("#tokens \n", len(tokens))
-        # print("algined tokens \n", tokens)
-        # # print("datset\n", token_labels)
-        # print(f"aligned decoded\n", self.tokenizer.decode(tokens))
-        # TODO: check whether these tokens are the same as the batched ones
-        # mask = [1] * len(tokens)  # + [0] * (self.max_len - len(tokens))
-        # tokens = tokens + [self.tokenizer.pad_token_id] * (self.max_len - len(tokens))
-        # token_labels = token_labels + [self.label_pad_token] * (self.max_len - len(token_labels))
-        # unsqueeze feature dimension
-        # return (
-        #     torch.tensor(tokens).unsqueeze(1),
-        #     torch.tensor(token_labels).unsqueeze(1),
-        #     torch.tensor(mask).unsqueeze(1),
-        # )
         return text, token_labels
