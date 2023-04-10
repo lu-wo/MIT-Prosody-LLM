@@ -9,7 +9,7 @@ train_val_test_split: null
 
 model_name: gpt2 # gpt2 or bert-base-{uncased, cased}
 use_fast_tokenizer: False 
-score_first_token: True # only score the first token of a word in loss
+score_first_token: False # only score the first token of a word in loss
 relative_to_prev: False # labels are not absolute but relative to n previous words' avg
 n_prev: 3 # number of previous words to compute the avg 
 

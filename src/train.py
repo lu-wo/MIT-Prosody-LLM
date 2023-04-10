@@ -63,7 +63,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     )
 
     log.info(f"Instantiating model <{cfg.model_task._target_}>")
-    model: LightningModule = hydra.utils.instantiate(
+    model_task: LightningModule = hydra.utils.instantiate(
         cfg.model_task, save_path=cfg.paths.output_dir
     )
 
@@ -81,7 +81,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     object_dict = {
         "cfg": cfg,
         "datamodule": datamodule,
-        "model": model,
+        "model_task": model_task,
         "callbacks": callbacks,
         "logger": logger,
         "trainer": trainer,
@@ -93,11 +93,13 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
 
     if cfg.get("compile"):
         log.info("Compiling model!")
-        model = torch.compile(model)
+        model_task = torch.compile(model_task)
 
     if cfg.get("train"):
         log.info("Starting training!")
-        trainer.fit(model=model, datamodule=datamodule, ckpt_path=cfg.get("ckpt_path"))
+        trainer.fit(
+            model=model_task, datamodule=datamodule, ckpt_path=cfg.get("ckpt_path")
+        )
 
     train_metrics = trainer.callback_metrics
 
@@ -107,7 +109,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
         if ckpt_path == "":
             log.warning("Best ckpt not found! Using current weights for testing...")
             ckpt_path = None
-        trainer.test(model=model, datamodule=datamodule, ckpt_path=ckpt_path)
+        trainer.test(model=model_task, datamodule=datamodule, ckpt_path=ckpt_path)
         log.info(f"Best ckpt path: {ckpt_path}")
 
     test_metrics = trainer.callback_metrics
