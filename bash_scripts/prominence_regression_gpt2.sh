@@ -8,7 +8,7 @@
 #SBATCH -c 1                   # 4 virtual CPU cores
 #SBATCH --gres=gpu:1
 #### SBATCH --constraint=any-A100
-#SBATCH --mem=30G             # 40 GB of RAM
+#SBATCH --mem=20G             # 40 GB of RAM
 
 #### srun -n 4 -t 09:00:00 --mem=30G --gres=gpu:1 --constraint=any-A100 --pty bash
 #### srun -n 4 -t 09:00:00 --mem=30G --gres=gpu:QUADRORTX6000:1 --pty bash
@@ -23,7 +23,7 @@ echo "SLURM_JOB_ID:    ${SLURM_JOB_ID}"
 echo "Running on node: $(hostname)"
 
 # Binary or script to execute
-python src/train.py experiment=prominence_regression_gpt2
+python src/train.py experiment=prominence_regression_absolute_gpt2
 
 # Send more noteworthy information to the output log
 echo "Finished at:     $(date)"
