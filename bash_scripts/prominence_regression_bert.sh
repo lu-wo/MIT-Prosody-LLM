@@ -6,7 +6,7 @@
 #SBATCH -t 9:00:00 
 #SBATCH -N 1                  # one node
 #SBATCH -c 1                   # 4 virtual CPU cores
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:QUADRORTX6000:1 
 #### SBATCH --constraint=any-A100
 #SBATCH --mem=30G             # 40 GB of RAM
 
