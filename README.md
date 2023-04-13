@@ -1,6 +1,11 @@
-<div align="center">
+<div style="text-align: center">
 
 ### Prosody Experiments Super Quick Start:
+
+</div>
+
+<!-- <div style="text-align: left"> -->
+
 1. Create an environment, e.g with [anaconda](https://www.anaconda.com/products/individual).
 ```
 conda create --name prosody python=3.10
@@ -15,7 +20,14 @@ git clone https://github.com/Helsinki-NLP/prosody.git
 ```
 python src/train.py experiment=prominence_regression_gpt
 ```
+<!-- </div> -->
+
+
 For details on the full functionality of this repository please refer to the full README below!
+
+
+<div align="center">
+
 
 # Prosody Language Model
 
