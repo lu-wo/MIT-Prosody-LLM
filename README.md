@@ -1,5 +1,22 @@
 <div align="center">
 
+### Prosody Experiments Super Quick Start:
+1. Create an environment, e.g with [anaconda](https://www.anaconda.com/products/individual).
+```
+conda create --name prosody python=3.10
+conda install --file conda_requirements.txt
+```
+2. Download the already prepared prominence dataset:
+```
+cd data
+git clone https://github.com/Helsinki-NLP/prosody.git
+```
+3. Run your first experiment 
+```
+python src/train.py experiment=prominence_regression_gpt
+```
+For details on the full functionality of this repository please refer to the full README below!
+
 # Prosody Language Model
 
 [![MIT](https://img.shields.io/badge/MIT-University-red?logo=mit&logoColor=white)](https://www.mit.edu/)

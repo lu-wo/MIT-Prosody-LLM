@@ -1,5 +1,5 @@
 _target_: src.data.prominence_regression_datamodule.ProminenceRegressionDataModule
-data_dir: /Users/lukas/Desktop/projects/MIT/prosody/prosody/repositories/helsinki-prosody/data
+data_dir: data/prosody/data
 train_file: train_360.txt
 val_file: dev.txt
 test_file: test.txt
