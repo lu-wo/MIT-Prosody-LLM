@@ -19,6 +19,7 @@ git clone https://github.com/Helsinki-NLP/prosody.git
 ```
 3. Run your first experiment 
 ```
+cd .. # go back to project root
 python src/train.py experiment=prominence_regression_gpt
 ```
 <!-- </div> -->
