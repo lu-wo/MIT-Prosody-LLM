@@ -9,6 +9,7 @@
 1. Create an environment, e.g with [anaconda](https://www.anaconda.com/products/individual).
 ```
 conda create --name prosody python=3.10
+conda activate prosody
 conda install --file conda_requirements.txt
 ```
 2. Download the already prepared prominence dataset:
